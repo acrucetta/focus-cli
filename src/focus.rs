@@ -1,5 +1,6 @@
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, BufRead, BufReader, Write};
+use std::process::Command;
 use std::time::Duration;
 
 /// This file will take care of:
@@ -71,6 +72,18 @@ fn modify_websites(path: &str, action: Action, websites: &[&str]) -> io::Result<
             }
         }
     }
+
+    // Flush DNS cache (example for macOS, adjust for your OS)
+    let _ = Command::new("sudo")
+        .arg("dscacheutil")
+        .arg("-flushcache")
+        .output()?;
+
+    let _ = Command::new("sudo")
+        .arg("killall")
+        .arg("-HUP")
+        .arg("mDNSResponder")
+        .output()?;
 
     Ok(())
 }
