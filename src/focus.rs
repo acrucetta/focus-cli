@@ -15,12 +15,13 @@ enum Action {
     Unblock,
 }
 
+const sample_websites: [&str; 1] = ["https://www.amazon.com/"];
+
 pub fn start_timer(minutes: u32) {
     let minutes = Duration::from_secs(minutes as u64 * 60);
     let start = std::time::Instant::now();
 
     // Block websites
-    let sample_websites = ["https://100r.co/site/home.html"];
     modify_websites("/etc/hosts", Action::Block, &sample_websites).unwrap();
 
     loop {
@@ -39,7 +40,6 @@ pub fn start_timer(minutes: u32) {
 
 pub fn kill_timer() {
     // Unblock websites
-    let sample_websites = ["https://100r.co/site/home.html"];
     modify_websites("/etc/hosts", Action::Unblock, &sample_websites).unwrap();
 }
 
