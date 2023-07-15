@@ -1,7 +1,7 @@
 use hyper::{Body, Request, Response, Server};
 use tokio::net::TcpListener;
 
-static BLOCKED_WEBSITE: &str = "https://google.com/";
+static BLOCKED_WEBSITES: &[&str] = &["andrescn.me", "facebook.com"];
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -41,7 +41,10 @@ async fn handle_client(socket: tokio::net::TcpStream) -> Result<(), Box<dyn std:
 async fn handle_request(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
     let host = req.uri().host().unwrap_or("");
 
-    if host == "andrescn.me" || host.ends_with(BLOCKED_WEBSITE) {
+    if BLOCKED_WEBSITES
+        .iter()
+        .any(|blocked| host == *blocked || host.ends_with(&format!(".{}", blocked)))
+    {
         let response = Response::builder()
             .status(403)
             .body(Body::from("Blocked"))
@@ -54,6 +57,14 @@ async fn handle_request(req: Request<Body>) -> Result<Response<Body>, hyper::Err
             println!("e: {:?}", e);
             e
         })
+    }
+}
+
+fn to_absolute_url(url: &str) -> String {
+    if url.starts_with("http://") || url.starts_with("https://") {
+        url.to_owned()
+    } else {
+        format!("http://{}", url)
     }
 }
 
@@ -82,8 +93,9 @@ mod tests {
             .build()
             .unwrap();
 
-        // Test blocked site
-        let blocked_res = client.get(BLOCKED_WEBSITE).send().await.unwrap();
+        // Test blocked website (only one of the blocked sites is tested)
+        let blocked_site = to_absolute_url(BLOCKED_WEBSITES[0]);
+        let blocked_res = client.get(blocked_site).send().await.unwrap();
         assert_eq!(blocked_res.status().as_u16(), 403);
 
         // Test non-blocked site
