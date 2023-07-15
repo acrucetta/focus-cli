@@ -2,6 +2,7 @@ use clap::{arg, command, Command};
 
 mod config;
 mod focus;
+mod server;
 
 fn main() {
     // Load the config file
