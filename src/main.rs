@@ -2,7 +2,8 @@ use clap::{arg, command, Command};
 
 mod config;
 mod focus;
-mod server;
+mod proxy;
+mod sinkhole;
 
 fn main() {
     // Load the config file
